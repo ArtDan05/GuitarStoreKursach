@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 2 -> {
-
+                    ThirdStageOfListThisIsTooMuch(position)
                 }
             }
        }
