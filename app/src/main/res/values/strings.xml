@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">GuitarStore</string>
+    <string name="categoryBackString"><![CDATA[<-- На страницу категорий]]></string>
 </resources>

@@ -13,6 +13,14 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:text="@string/categoryBackString"
+            android:onClick="navigateBack"
+            android:textSize="9pt"/>
+
         <LinearLayout
             android:id="@+id/nav_host_fragment"
             android:layout_width="match_parent"
