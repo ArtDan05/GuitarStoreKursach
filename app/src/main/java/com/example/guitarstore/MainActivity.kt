@@ -6,41 +6,35 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.BaseAdapter
-import android.widget.ImageView
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import androidx.core.graphics.scale
 
-
 class MainActivity : AppCompatActivity() {
 
-    lateinit var categoryList: ListView
-    private val dao get() = DatabaseInstance.db.categoryDao()
-    private val productsDao get() = DatabaseInstance.db.productDao()
-
+    lateinit var bottomNavigation: BottomNavigationView
     lateinit var placeholderDrawable: Drawable
     lateinit var placeholderBitmap: Bitmap
     lateinit var placeholderByte: ByteArray
+    lateinit var productsDao: ProductDao
 
-    private var currentParentId: Int? = null
-    private val parentStack = mutableListOf<Int?>()
+    private lateinit var controlHub: ControlHub
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         DatabaseInstance.init(this)
-        categoryList = findViewById(R.id.CategoryList)
 
+        bottomNavigation = findViewById(R.id.bottom_navigation)
+
+        controlHub = ViewModelProvider(this)[ControlHub::class.java]
 
         lifecycleScope.launch {
             placeholderDrawable = resources.getDrawable(R.drawable.fender_placeholder)
@@ -50,15 +44,39 @@ class MainActivity : AppCompatActivity() {
             placeholderByte = stream.toByteArray()
 
             preloadDataIfNeeded()
-            loadCategories(null)
         }
 
-        categoryList.setOnItemClickListener { adapter, view, position, id ->
-            val item = adapter.getItemAtPosition(position) as CategoryEntity
-            openCategory(item.id)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.mainContainer, CategoryFragment())
+            .commit()
+
+        bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.cartFragment -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.mainContainer, CartFragment())
+                        .addToBackStack(null)
+                        .commit()
+                    true
+                }
+
+                R.id.catalogFragment -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.mainContainer, CategoryFragment())
+                        .addToBackStack(null)
+                        .commit()
+                    true
+                }
+
+                else -> false
+            }
         }
     }
+
     private suspend fun preloadDataIfNeeded() {
+        val dao = DatabaseInstance.db.categoryDao()
+        productsDao = DatabaseInstance.db.productDao()
+
         val count = dao.getCount()
         val countProd = productsDao.getCount()
         if (count > 0 && countProd > 0) return
@@ -164,7 +182,6 @@ class MainActivity : AppCompatActivity() {
             CategoryEntity(id = 99, title = "Для укулеле", parentId = 65),
             CategoryEntity(id = 100, title = "Для скрипки", parentId = 65)
         )
-
         if (count == 0) dao.insertAll(data)
 
         val products = listOf(
@@ -303,89 +320,27 @@ class MainActivity : AppCompatActivity() {
             ProductEntity(id = 120, title = "Thomastik Dominant Для скрипки", price = 3200, image = placeholderByte, 6, 65, 100),
             ProductEntity(id = 121, title = "Pirastro Tonica Для скрипки", price = 2800, image = placeholderByte, 6, 65, 100)
         )
-
         if (countProd == 0) productsDao.insertAll(products)
     }
 
     fun navigateBack(view: View) {
-        if (parentStack.isNotEmpty()) {
-            parentStack.removeAt(parentStack.lastIndex)
-            currentParentId = parentStack.lastOrNull()
-            loadCategories(currentParentId)
-        }
+
     }
 
-    private fun openCategory(id: Int) {
-        parentStack.add(id)
-        if (parentStack.size == 3) {
-            lifecycleScope.launch {
-                Toast.makeText(this@MainActivity, "${parentStack[0]}, ${parentStack[1]}, ${parentStack[2]}", Toast.LENGTH_LONG)
-                val items = productsDao.getProductsByCategory(parentStack[0]!!, parentStack[1]!!, parentStack[2]!!)
-
-                val adapter = object : BaseAdapter() {
-                    override fun getCount(): Int = items.size
-                    override fun getItem(position: Int) = items[position]
-                    override fun getItemId(position: Int): Long = items[position].id.toLong()
-
-                    override fun getView(
-                        position: Int,
-                        convertView: View?,
-                        parent: ViewGroup
-                    ): View {
-                        val view = convertView ?: layoutInflater.inflate(
-                            R.layout.product_card,
-                            parent,
-                            false
-                        )
-                        val nameView = view.findViewById<TextView>(R.id.nameOfProduct)
-                        val priceView = view.findViewById<TextView>(R.id.productPrice)
-                        var imageView = view.findViewById<ImageView>(R.id.productPhoto)
-                        nameView.text = items[position].title
-                        priceView.text = "${if (items[position].price / 1000 == 0) "" else items[position].price / 1000} ${String.format("%03d", items[position].price % 1000)} Руб."
-                        imageView.setImageDrawable(getImageFromDB(items[position].image, imageView).toDrawable(resources))
-                        return view
-                    }
-                }
-
-                categoryList.adapter = adapter
-            }
-        }
-
-        else {
-            currentParentId = id
-            loadCategories(id)
-        }
-    }
-    private fun loadCategories(parentId: Int?) {
-        lifecycleScope.launch {
-            val items = if (parentId == null)
-                dao.getRootCategories()
-            else
-                dao.getChildren(parentId)
-
-            val adapter = object : ArrayAdapter<CategoryEntity>(
-                this@MainActivity,
-                R.layout.item_category,
-                items) {
-                override fun getItem(position: Int): CategoryEntity? = items[position]
-
-                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    val view = super.getView(position, convertView, parent)
-                    val textView = view.findViewById<TextView>(R.id.itemText)
-                    textView.text = items[position].title
-                    return view
-                }
-            }
-
-            categoryList.adapter = adapter
-        }
-    }
-
-    private fun getImageFromDB(byteArray: ByteArray, imageView: ImageView) : Bitmap {
+    fun getImageFromDB(byteArray: ByteArray): Bitmap {
         val bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-        imageView.setImageBitmap(
-            bmp.scale(512, 512, false)
-        )
-        return bmp
+        return bmp.scale(512, 512, false)
+    }
+
+    fun removeButtonClick(view: View) {
+        val id = view.tag as Int
+        lifecycleScope.launch {
+            CartManager.remove(productsDao.getProductByID(id))
+        }
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.mainContainer, CartFragment())
+            .addToBackStack(null)
+            .commit()
     }
 }

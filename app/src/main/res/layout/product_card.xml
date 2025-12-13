@@ -57,6 +57,7 @@
         android:text="В корзину"
         android:textSize="9pt"
         android:layout_margin="10dp"
+        android:onClick="toCart"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/contentOfProduct"
         app:layout_constraintStart_toStartOf="parent"
