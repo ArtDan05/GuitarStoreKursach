@@ -79,6 +79,7 @@ class ProductsFragment : Fragment() {
                     buyButton.setOnClickListener {
                         viewLifecycleOwner.lifecycleScope.launch {
                             ControlHub().addToCart(items[position].id)
+                            Toast.makeText(context, "Добавлено в корзину", Toast.LENGTH_LONG).show()
                         }
                     }
                     return view

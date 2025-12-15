@@ -15,10 +15,14 @@ import android.widget.Toast
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.scale
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class CartFragment : Fragment() {
     private lateinit var cartListView: ListView
     private lateinit var buyButton: Button
+    private lateinit var ordersDao: OrdersDao
+    private lateinit var orderStatusDao: OrdersIsCompletedDao
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,7 +37,7 @@ class CartFragment : Fragment() {
 
         cartListView = view.findViewById(R.id.productsInCartView)
         buyButton = view.findViewById(R.id.buyButton)
-
+        orderStatusDao = DatabaseInstance.db.orderIsCompletedDao()
 
         val items = CartManager.items
 
@@ -68,7 +72,17 @@ class CartFragment : Fragment() {
         cartListView.adapter = adapter
 
         buyButton.setOnClickListener {
-            Toast.makeText(context, "Покупка оформлена!", Toast.LENGTH_SHORT).show()
+            ordersDao = DatabaseInstance.db.ordersDao()
+            lifecycleScope.launch {
+                val orderId_f = (if (ordersDao.getLastOrderId() == null) 0 else ordersDao.getLastOrderId()) + 1
+                for (i in CartManager.items) {
+                    ordersDao.insertProduct(OrdersEntity(itemId = i.id, orderId = orderId_f))
+                }
+
+                orderStatusDao.insertOrderStatus(OrderIsCompletedEntity(orderId = ordersDao.getLastOrderId(), isCompleted = false))
+                if (ordersDao.getLastOrderId() != 0) orderStatusDao.checkAsCompleted(ordersDao.getLastOrderId() - 1)
+            }
+            Toast.makeText(context, "Товары зарезервированы", Toast.LENGTH_SHORT).show()
         }
 
     }

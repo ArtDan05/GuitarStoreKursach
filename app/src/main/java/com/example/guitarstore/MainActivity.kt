@@ -23,6 +23,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var placeholderBitmap: Bitmap
     lateinit var placeholderByte: ByteArray
     lateinit var productsDao: ProductDao
+    lateinit var ordersDao: OrdersDao
+    lateinit var descriptionDao: ItemDescriptionDao
 
     private lateinit var controlHub: ControlHub
 
@@ -68,6 +70,14 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
 
+                R.id.profileFragment -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.mainContainer, ProfileFragment())
+                        .addToBackStack(null)
+                        .commit()
+                    true
+                }
+
                 else -> false
             }
         }
@@ -76,10 +86,13 @@ class MainActivity : AppCompatActivity() {
     private suspend fun preloadDataIfNeeded() {
         val dao = DatabaseInstance.db.categoryDao()
         productsDao = DatabaseInstance.db.productDao()
+        ordersDao = DatabaseInstance.db.ordersDao()
+        descriptionDao = DatabaseInstance.db.itemDescriptionDao()
 
         val count = dao.getCount()
         val countProd = productsDao.getCount()
-        if (count > 0 && countProd > 0) return
+        val countDescription = descriptionDao.getCount()
+        if (count > 0 && countProd > 0 && countDescription > 0) return
 
         val data = listOf(
             CategoryEntity(id = 1, title = "Гитары", parentId = null),
@@ -321,15 +334,193 @@ class MainActivity : AppCompatActivity() {
             ProductEntity(id = 121, title = "Pirastro Tonica Для скрипки", price = 2800, image = placeholderByte, 6, 65, 100)
         )
         if (countProd == 0) productsDao.insertAll(products)
-    }
 
-    fun navigateBack(view: View) {
+        val description = listOf(
+            ItemDescriptionEntity(itemId = 0, description = "Fender Player II Stratocaster - современная интерпретация классики. Корпус из ольхи обеспечивает сбалансированный звук с четкими верхами и насыщенными низами. Оснащена тремя синглами Alnico V, 5-позиционным переключателем и двухточечным тремоло."),
+            ItemDescriptionEntity(itemId = 1, description = "Fabio ST100 BLS - доступная электрогитара в форм-факторе стратокастер. Корпус из липы, 22 лада, стандартный тремоло-бридж. Идеальна для начинающих гитаристов."),
 
-    }
+            ItemDescriptionEntity(itemId = 2, description = "Fender Squier Classic - классический телекастер по доступной цене. Корпус из тополя, один бриджевый звукосниматель. Прямой, атакующий звук, идеальный для кантри и рок-н-ролла."),
+            ItemDescriptionEntity(itemId = 3, description = "Oscar Schmidt OS-LT IV - электрогитара с корпусом из красного дерева. Два сингла, фиксированный бридж. Теплый, округлый звук с хорошим сустейном."),
 
-    fun getImageFromDB(byteArray: ByteArray): Bitmap {
-        val bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-        return bmp.scale(512, 512, false)
+            ItemDescriptionEntity(itemId = 4, description = "Terris TSS-239 BK - суперстрат с хамбакером в бриджевой позиции. 24 лада, тремоло-бридж. Агрессивный звук для хард-рока и металла."),
+            ItemDescriptionEntity(itemId = 5, description = "Jet JS-501 BK - профессиональный суперстрат с хамбакерами EMG. Кленовый гриф, корпус из ольхи. Идеальна для современных тяжелых стилей."),
+
+            ItemDescriptionEntity(itemId = 6, description = "Gibson Les Paul Standard 60s - легендарная модель с звукоснимателями BurstBucker. Корпус из красного дерева с кленовым топом. Теплый, насыщенный звук с длинным сустейном."),
+            ItemDescriptionEntity(itemId = 7, description = "Fabio LP02 BK - доступная версия Les Paul. Два хамбакера, фиксированный бридж. Корпус из липы обеспечивает сбалансированный звук."),
+
+            ItemDescriptionEntity(itemId = 8, description = "Gibson SG Standard - легкая и эргономичная гитара с характерным звучанием. Два хамбакера 490R/498T, тонкий корпус из красного дерева."),
+            ItemDescriptionEntity(itemId = 9, description = "Gibson Epiphone SG Tribute Plus - более доступная версия SG с хамбакерами Probucker. Отличное качество сборки по разумной цене."),
+
+            ItemDescriptionEntity(itemId = 10, description = "Gibson `70s Explorer CW - культовая модель с агрессивным дизайном. Хамбакеры 498T/490R, корпус из красного дерева. Мощный звук для хард-рока."),
+            ItemDescriptionEntity(itemId = 11, description = "Adam Firebird - бюджетный вариант Explorer. Два хамбакера, фиксированный бридж. Стильный дизайн по доступной цене."),
+
+            ItemDescriptionEntity(itemId = 12, description = "Fender AV II 66 - точная реплика джаз-мастера 1966 года. Одноконтурная электроника, плавающий бридж. Идеальна для альтернативного рока и сёрфа."),
+            ItemDescriptionEntity(itemId = 13, description = "Fender Squier Classic Vibe `60s - доступная версия джаз-мастера. Два сингла, тремоло-бридж. Аутентичный винтажный звук."),
+
+            ItemDescriptionEntity(itemId = 14, description = "Yamaha FG800 - классическая гитара джамбо с корпусом из ели и нато. Громкий, насыщенный звук с хорошим балансом."),
+            ItemDescriptionEntity(itemId = 15, description = "Fender FA-125 - дредноут для начинающих. Корпус из ламината, гриф из нато. Отличный вариант для обучения."),
+
+            ItemDescriptionEntity(itemId = 16, description = "Cort AD810 - классический дредноут с корпусом из ели и красного дерева. Мощный, направленный звук, идеален для аккомпанемента."),
+            ItemDescriptionEntity(itemId = 17, description = "Epiphone DR-100 - доступный дредноут с корпусом из ели и красного дерева. Традиционный звук Martin-style."),
+
+            ItemDescriptionEntity(itemId = 18, description = "Taylor 214ce - гитара гранд-аудиториум с встроенным звукоснимателем. Корпус из ламината, гриф из красного дерева. Четкий, сбалансированный звук."),
+            ItemDescriptionEntity(itemId = 19, description = "Crafter D-7 - доступная гитара формы гранд-аудиториум. Корпус из ели и сапеле. Универсальный инструмент для разных стилей."),
+
+            ItemDescriptionEntity(itemId = 20, description = "Ibanez V50NJP - фолк-гитара с узким корпусом. Идеальна для музыкантов с небольшим телосложением. Мягкий, камерный звук."),
+            ItemDescriptionEntity(itemId = 21, description = "Fender CD-60SCE - электроакустическая фолк-гитара с встроенным тюнером. Отличный выбор для выступлений."),
+
+            ItemDescriptionEntity(itemId = 22, description = "Gretsch G9500 - гитара парлор с корпусом из красного дерева. Небольшой размер, теплый, насыщенный звук. Идеальна для блюза."),
+            ItemDescriptionEntity(itemId = 23, description = "Sigma 000MC-1ST - парлор с кедровым топом. Мягкий, обволакивающий звук с красивыми средними частотами."),
+
+            ItemDescriptionEntity(itemId = 24, description = "Ortega R121-7 - 7-струнная гитара орка. Увеличенный диапазон, глубокий бас. Идеальна для фингерстайла."),
+            ItemDescriptionEntity(itemId = 25, description = "Furch Blue Gc-CM - премиальная гитара орка с кедровым топом. Исключительное качество изготовления и звучания."),
+
+            ItemDescriptionEntity(itemId = 26, description = "Epiphone Casino - полностью полый корпус, два сингла P-90. Легендарный звук, известный по записям The Beatles."),
+            ItemDescriptionEntity(itemId = 27, description = "Ibanez AS73 - полуакустика с полым корпусом. Два хамбакера, стиль ES-335. Универсальный инструмент для джаза и блюза."),
+
+            ItemDescriptionEntity(itemId = 28, description = "Gibson ES-335 - легендарная полуакустика с центральным блоком. Два хамбакера, идеальный баланс между акустическим и электрическим звучанием."),
+            ItemDescriptionEntity(itemId = 29, description = "Epiphone Dot - доступная версия ES-335. Корпус из клена, два хамбакера. Отличный звук по разумной цене."),
+
+            ItemDescriptionEntity(itemId = 30, description = "Fender Player Precision Bass - классический P-Bass с одним синглом. Плотный, фундаментальный звук, основа большинства басовых партий."),
+            ItemDescriptionEntity(itemId = 31, description = "Squier Affinity Precision Bass - доступный P-Bass для начинающих. Корпус из ольхи, классический звук Precision."),
+
+            ItemDescriptionEntity(itemId = 32, description = "Fender American Professional Jazz Bass - профессиональный J-Bass с двумя синглами. Яркий, четкий звук с выразительными верхами."),
+            ItemDescriptionEntity(itemId = 33, description = "Ibanez GSR200 - бюджетный J-Bass стиль. Легкий корпус, быстрый гриф. Идеален для начинающих."),
+
+            ItemDescriptionEntity(itemId = 34, description = "Yamaha TRBX504 - бас-гитара для фьюжн и современных стилей. Активная электроника, два хамбакера. Широкий тональный диапазон."),
+            ItemDescriptionEntity(itemId = 35, description = "Cort GB74JJ - 4-струнный бас для джаза и фьюжн. Пассивная электроника, гриф из венге. Теплый, округлый звук."),
+
+            ItemDescriptionEntity(itemId = 36, description = "Ibanez SR505 - 5-струнный бас с активной электроникой. Узкий гриф, легкий корпус. Расширенный диапазон для современных стилей."),
+            ItemDescriptionEntity(itemId = 37, description = "Spector Legend 5 - 5-струнный бас с характерным дизайном. Активная электроника, агрессивный звук для металла."),
+
+            ItemDescriptionEntity(itemId = 38, description = "Schecter Stiletto Studio 6 - 6-струнный бас для сложных партий. Активная электроника, 24 лада. Максимальный диапазон."),
+            ItemDescriptionEntity(itemId = 39, description = "Ibanez GSR206 - доступный 6-струнный бас. Пассивные звукосниматели, отличный вариант для изучения многоголосных техник."),
+
+            ItemDescriptionEntity(itemId = 40, description = "Taylor GS Mini-e Bass - компактный акустический бас джамбо. Встроенный звукосниматель, идеален для акустических выступлений."),
+            ItemDescriptionEntity(itemId = 41, description = "Fender Kingman Bass - акустический бас с корпусом джамбо. Громкий, насыщенный звук, встроенный тюнер."),
+
+            ItemDescriptionEntity(itemId = 42, description = "Ibanez AEB10E - электроакустический бас дредноут. Встроенный эквалайзер, мощный звук для сцены."),
+            ItemDescriptionEntity(itemId = 43, description = "Crafter BA-400 - акустический бас с корпусом дредноут. Качественная сборка, насыщенный звук."),
+
+            ItemDescriptionEntity(itemId = 44, description = "Gibson J-45 Bass - премиальный акустический бас. Корпус из красного дерева, исключительное качество звучания."),
+            ItemDescriptionEntity(itemId = 45, description = "Martin BC-15E - акустический бас от легендарного производителя. Корпус из махагони, встроенная электроника."),
+
+            ItemDescriptionEntity(itemId = 46, description = "Русская Балалайка Электро Прима - профессиональный инструмент с пьезозвукоснимателем. Корпус из ели, гриф из бука. Аутентичный звук с возможностью усиления."),
+            ItemDescriptionEntity(itemId = 47, description = "Теремок Электро Прима - электронная балалайка для сцены. Встроенный предусилитель, регулировка громкости и тембра."),
+
+            ItemDescriptionEntity(itemId = 48, description = "Русская Балалайка Электро Секунда - балалайка секунда с нижним строем. Идеальна для ансамблевой игры, создает гармоническую основу."),
+            ItemDescriptionEntity(itemId = 49, description = "Теремок Электро Секунда - электронная версия балалайки секунда. Удобный корпус, качественная электроника."),
+
+            ItemDescriptionEntity(itemId = 50, description = "Русская Балалайка Электро Альт - альтовая балалайка с теплым тембром. Используется для средних голосов в ансамбле."),
+            ItemDescriptionEntity(itemId = 51, description = "Теремок Электро Альт - электронная альтовая балалайка. Усиленный корпус, стойкость к обратной связи."),
+
+            ItemDescriptionEntity(itemId = 52, description = "Русская Балалайка Электро Бас - бас-балалайка с глубоким звучанием. Создает ритмическую и гармоническую основу ансамбля."),
+            ItemDescriptionEntity(itemId = 53, description = "Теремок Электро Бас - электронная бас-балалайка. Мощный звук, идеальна для современных аранжировок."),
+
+            ItemDescriptionEntity(itemId = 54, description = "Русская Балалайка Электро Контрабас - самая большая балалайка оркестра. Очень низкий строй, фундаментальный звук."),
+            ItemDescriptionEntity(itemId = 55, description = "Теремок Электро Контрабас - электронная контрабас-балалайка. Специальная конструкция для низких частот, встроенный компрессор."),
+
+            ItemDescriptionEntity(itemId = 56, description = "Русская Балалайка Прима - классическая акустическая балалайка. Корпус из ели, гриф из бука. Традиционный русский звук."),
+            ItemDescriptionEntity(itemId = 57, description = "Теремок Прима - акустическая балалайка для начинающих. Качественные материалы, доступная цена."),
+
+            ItemDescriptionEntity(itemId = 58, description = "Русская Балалайка Секунда - акустическая балалайка секунда. Низкий строй, используется в оркестрах."),
+            ItemDescriptionEntity(itemId = 59, description = "Теремок Секунда - доступная акустическая балалайка секунда. Идеальна для учебных заведений и ансамблей."),
+
+            ItemDescriptionEntity(itemId = 60, description = "Русская Балалайка Альт - акустическая альтовая балалайка. Средний диапазон, теплый тембр."),
+            ItemDescriptionEntity(itemId = 61, description = "Теремок Альт - акустическая балалайка альт. Качественная сборка, традиционное звучание."),
+
+            ItemDescriptionEntity(itemId = 62, description = "Русская Балалайка Бас - акустическая бас-балалайка. Большой корпус, глубокий звук."),
+            ItemDescriptionEntity(itemId = 63, description = "Теремок Бас - акустическая бас-балалайка. Усиленная конструкция, громкое звучание."),
+
+            ItemDescriptionEntity(itemId = 64, description = "Русская Балалайка Контрабас - акустическая контрабас-балалайка. Самый большой размер, очень низкий звук."),
+            ItemDescriptionEntity(itemId = 65, description = "Теремок Контрабас - акустическая контрабас-балалайка. Массивная конструкция, мощный звук."),
+
+            ItemDescriptionEntity(itemId = 66, description = "Kala KA-15S - электронное укулеле сопрано с пьезозвукоснимателем. Компактный размер, яркий звук. Идеально для путешествий."),
+            ItemDescriptionEntity(itemId = 67, description = "Mahalo U-30 - доступное электронное укулеле сопрано. Встроенный тюнер, отличный вариант для начинающих."),
+
+            ItemDescriptionEntity(itemId = 68, description = "Cordoba 15CM - электронное укулеле концерт с корпусом из красного дерева. Более глубокий звук чем у сопрано, удобный гриф."),
+            ItemDescriptionEntity(itemId = 69, description = "Flight TUC-34 - электронное укулеле концерт с активной электроникой. Регулировка тембра, встроенный клипсовый тюнер."),
+
+            ItemDescriptionEntity(itemId = 70, description = "Kala KA-ATP-CTG - электронное укулеле тенор с кедровым топом. Теплый, объемный звук, расширенный диапазон."),
+            ItemDescriptionEntity(itemId = 71, description = "Cordoba 20TM - электронное укулеле тенор с корпусом из махагони. Богатый, сложный тембр, идеален для сольных партий."),
+
+            ItemDescriptionEntity(itemId = 72, description = "Kala KA-ABP-CTG - электронное укулеле баритон. Самый низкий строй среди укулеле, звучит почти как гитара."),
+            ItemDescriptionEntity(itemId = 73, description = "Cordoba 24B - электронное укулеле баритон с корпусом из красного дерева. Глубокий, насыщенный звук, уникальный характер."),
+
+            ItemDescriptionEntity(itemId = 74, description = "Flight NUS310 - акустическое укулеле сопрано для начинающих. Нейлоновые струны, легкий корпус. Идеальный первый инструмент."),
+            ItemDescriptionEntity(itemId = 75, description = "Hora U-10 - акустическое укулеле сопрано традиционной формы. Качественная сборка, аутентичный гавайский звук."),
+
+            ItemDescriptionEntity(itemId = 76, description = "Kala KA-C - акустическое укулеле концерт с корпусом из красного дерева. Удобный размер, сбалансированный звук."),
+            ItemDescriptionEntity(itemId = 77, description = "Mahalo MK2 - акустическое укулеле концерт по доступной цене. Цветные струны, яркий дизайн, веселый звук."),
+
+            ItemDescriptionEntity(itemId = 78, description = "Cordoba 22T - акустическое укулеле тенор премиум-класса. Корпус из цельного кедра, исключительное качество звука."),
+            ItemDescriptionEntity(itemId = 79, description = "Flight NUT430 - акустическое укулеле тенор с корпусом из ели. Громкий, проекционный звук, идеален для сцены."),
+
+            ItemDescriptionEntity(itemId = 80, description = "Kala KA-BG - акустическое укулеле баритон. Низкий строй DGBE, как у гитары. Идеален для гитаристов."),
+            ItemDescriptionEntity(itemId = 81, description = "Cordoba 24B Акустика - акустическое укулеле баритон с корпусом из красного дерева. Теплый, гитароподобный звук."),
+
+            ItemDescriptionEntity(itemId = 82, description = "Yamaha YEV104 - электроскрипка 4/4 с пятью струнами. Расширенный диапазон, современный дизайн. Идеальна для экспериментальной музыки."),
+            ItemDescriptionEntity(itemId = 83, description = "Cecilio CVN-500 - электроскрипка 4/4 по доступной цене. В комплекте наушники, кабель и чехол. Отличный вариант для репетиций."),
+
+            ItemDescriptionEntity(itemId = 84, description = "Stagg EVN - электроскрипка 7/8 для музыкантов с небольшими руками. Удобный размер, качественная электроника."),
+            ItemDescriptionEntity(itemId = 85, description = "Barcus Berry - электроскрипка 7/8 премиум-класса. Профессиональный звук, ручная сборка."),
+
+            ItemDescriptionEntity(itemId = 86, description = "NS Design WAV4 - электроскрипка 3/4 с уникальным дизайном. Эргономичный корпус, современный звук."),
+            ItemDescriptionEntity(itemId = 87, description = "Zeta Jazz - электроскрипка 3/4 для джазовых музыкантов. Теплый, округлый звук, стильный внешний вид."),
+
+            ItemDescriptionEntity(itemId = 88, description = "Yamaha YEV104 1/2 - электроскрипка для подростков. Качественная сборка, регулируемый подбородник."),
+            ItemDescriptionEntity(itemId = 89, description = "Cecilio CVN-500 1/2 - электроскрипка для детей. Полный комплект, безопасные материалы."),
+
+            ItemDescriptionEntity(itemId = 90, description = "Stagg EVN 1/4 - электроскрипка для маленьких детей. Легкий корпус, мягкие струны, удобный размер."),
+            ItemDescriptionEntity(itemId = 91, description = "Barcus Berry 1/4 - профессиональная детская электроскрипка. Отличное качество звука, регулируемая подставка."),
+
+            ItemDescriptionEntity(itemId = 92, description = "NS Design WAV4 1/8 - самая маленькая электроскрипка. Для детей от 3 лет, безопасная конструкция."),
+            ItemDescriptionEntity(itemId = 93, description = "Zeta Jazz 1/8 - миниатюрная электроскрипка премиум-класса. Идеальна для раннего музыкального развития."),
+
+            ItemDescriptionEntity(itemId = 94, description = "Stradivarius Copy - копия скрипки Страдивари 4/4. Ручная работа, качественные материалы. Богатый, объемный звук."),
+            ItemDescriptionEntity(itemId = 95, description = "Mendini MV500 - акустическая скрипка 4/4 для начинающих. Полный комплект: смычок, канифоль, чехол."),
+
+            ItemDescriptionEntity(itemId = 96, description = "Cremona SV-500 - акустическая скрипка 7/8 для взрослых с небольшими руками. Профессиональное качество, ручная настройка."),
+            ItemDescriptionEntity(itemId = 97, description = "Stentor 7/8 - акустическая скрипка для студентов. Надежная конструкция, стабильный строй."),
+
+            ItemDescriptionEntity(itemId = 98, description = "Yamaha V3SKA - акустическая скрипка 3/4 для подростков. Качественная сборка, оптимальное соотношение цена/качество."),
+            ItemDescriptionEntity(itemId = 99, description = "Cremona SV-175 - акустическая скрипка 3/4 для продвинутых учеников. Улучшенные материалы, лучший звук."),
+
+            ItemDescriptionEntity(itemId = 100, description = "Mendini MV200 - акустическая скрипка 1/2 для детей. Яркий цвет, легкий корпус, удобные колки."),
+            ItemDescriptionEntity(itemId = 101, description = "Stentor Student I - акустическая скрипка 1/2 для музыкальных школ. Классическое качество, проверенная временем модель."),
+
+            ItemDescriptionEntity(itemId = 102, description = "Yamaha V5SKA - акустическая скрипка 1/4 для маленьких детей. Безопасные материалы, регулируемый подбородник."),
+            ItemDescriptionEntity(itemId = 103, description = "Cremona SV-100 - акустическая скрипка 1/4 начального уровня. Идеальный первый инструмент для ребенка."),
+
+            ItemDescriptionEntity(itemId = 104, description = "Mendini MV50 - акустическая скрипка 1/8 для самых маленьких. Миниатюрный размер, мягкие струны."),
+            ItemDescriptionEntity(itemId = 105, description = "Stentor Student I 1/8 - профессиональная детская скрипка. Качественная сборка, хороший звук даже в маленьком размере."),
+
+            ItemDescriptionEntity(itemId = 106, description = "Dunlop Tortex 0.60mm - пластиковые медиаторы средней жесткости. Текстурированная поверхность для надежного хвата. Идеальны для ритм-гитары."),
+            ItemDescriptionEntity(itemId = 107, description = "Jim Dunlop Nylon Standard - нейлоновые медиаторы различной толщины. Гибкие, износостойкие, не выскальзывают из пальцев."),
+
+            ItemDescriptionEntity(itemId = 108, description = "Dunlop Jazz III - металлические медиаторы для скоростной игры. Маленький размер, острый кончик. Любимый выбор многих виртуозов."),
+            ItemDescriptionEntity(itemId = 109, description = "Planet Waves Black Ice - металлические медиаторы с черным покрытием. Агрессивный атака, яркий звук, стильный внешний вид."),
+
+            ItemDescriptionEntity(itemId = 110, description = "D'Addario EJ27 - нейлоновые струны для классической гитары. Низкое натяжение, мягкое ощущение. Идеальны для начинающих."),
+            ItemDescriptionEntity(itemId = 111, description = "Savarez 500AR - профессиональные нейлоновые струны. Высокая четкость, богатый обертонами звук. Для концертных выступлений."),
+
+            ItemDescriptionEntity(itemId = 112, description = "Ernie Ball 2221 - металлические струны Regular Slinky. Сбалансированное натяжение, универсальный звук. Самые популярные струны в мире."),
+            ItemDescriptionEntity(itemId = 113, description = "Elixir Nanoweb - металлические струны с нанопокрытием. Долгий срок службы, защита от коррозии. Звучат как новые в несколько раз дольше."),
+
+            ItemDescriptionEntity(itemId = 114, description = "Rotosound RB45 - струны для бас-гитары круглой намоткой. Яркий, атакующий звук с четкими верхами. Классика для рока."),
+            ItemDescriptionEntity(itemId = 115, description = "D'Addario EXL170 - струны для бас-гитары Regular Light. Сбалансированный звук, комфортное натяжение. Подходят для большинства стилей."),
+
+            ItemDescriptionEntity(itemId = 116, description = "Первый Струнный - струны для балалайки прима. Традиционные материалы, аутентичный звук. Для классических русских инструментов."),
+            ItemDescriptionEntity(itemId = 117, description = "Русские Струны - профессиональные струны для балалайки. Улучшенная стабильность строя, богатый тембр."),
+
+            ItemDescriptionEntity(itemId = 118, description = "Aquila Nylgut - струны для укулеле из синтетического материала. Яркий, проекционный звук, быстро растягиваются. Самые популярные струны для укулеле."),
+            ItemDescriptionEntity(itemId = 119, description = "D'Addario EJ87S - струны для укулеле сопрано из фторуглерода. Четкий, сфокусированный звук, долгий срок службы."),
+
+            ItemDescriptionEntity(itemId = 120, description = "Thomastik Dominant - струны для скрипки премиум-класса. Теплый, объемный звук с богатыми обертонами. Стандарт для профессиональных музыкантов."),
+            ItemDescriptionEntity(itemId = 121, description = "Pirastro Tonica - струны для скрипки для студентов. Хорошее качество по доступной цене. Стабильный строй, ровный тембр по всем струнам.")
+        )
+
+        if (countDescription == 0) descriptionDao.insertDescription(description)
     }
 
     fun removeButtonClick(view: View) {
@@ -342,5 +533,30 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.mainContainer, CartFragment())
             .addToBackStack(null)
             .commit()
+    }
+
+    fun aboutButton(view: View) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.mainContainer, AboutFragment())
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun historyButton(view: View) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.mainContainer, HistoryFragment())
+            .addToBackStack(null)
+            .commit()
+    }
+    fun removeFromOrder(view: View) {
+        val id = view.tag as Int
+        lifecycleScope.launch {
+            ordersDao.deleteItem(id, ordersDao.getLastOrderId())
+
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.mainContainer, ProfileFragment())
+                .addToBackStack(null)
+                .commit()
+        }
     }
 }

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">GuitarStore</string>
     <string name="categoryBackString"><![CDATA[<-- На страницу категорий]]></string>
+    <string name="aboutString"><![CDATA[Курсовой проект <<Магазин струнных инструментов>> создан студентом группы 3пк2 Даниловым Артёмом. Является мобильным приложением для Android, в основе которого язык Kotlin]]></string>
 </resources>

@@ -101,9 +101,8 @@ class CategoryFragment : Fragment() {
                 override fun getItem(position: Int): CategoryEntity? = items[position]
 
                 override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    val view = super.getView(position, convertView, parent)
-                    val textView = view.findViewById<TextView>(R.id.itemText)
-                    textView.text = items[position].title
+                    val view = super.getView(position, convertView, parent) as TextView
+                    view.text = items[position].title
                     return view
                 }
             }

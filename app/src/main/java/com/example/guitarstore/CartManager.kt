@@ -13,4 +13,5 @@ object CartManager {
     fun remove(item: ProductEntity) {
         items.remove(item)
     }
+
 }
