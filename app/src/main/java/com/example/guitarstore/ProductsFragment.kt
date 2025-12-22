@@ -86,6 +86,15 @@ class ProductsFragment : Fragment() {
                 }
             }
         }
+
+        list.setOnItemClickListener { adapter, view, position, id ->
+            val item = adapter.getItemAtPosition(position) as ProductEntity
+
+            childFragmentManager.beginTransaction()
+                .replace(R.id.mainContainer, DescriptionFragment.newInstance(item.id))
+                .addToBackStack(null)
+                .commit()
+        }
     }
 
     private fun getImageFromDB(byteArray: ByteArray, imageView: ImageView) : Bitmap {

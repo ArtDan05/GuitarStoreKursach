@@ -548,6 +548,7 @@ class MainActivity : AppCompatActivity() {
             .addToBackStack(null)
             .commit()
     }
+
     fun removeFromOrder(view: View) {
         val id = view.tag as Int
         lifecycleScope.launch {

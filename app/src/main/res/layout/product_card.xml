@@ -3,7 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/card_design"
+    android:paddingBottom="5dp">
 <LinearLayout
     android:id="@+id/contentOfProduct"
     android:layout_width="match_parent"
@@ -61,5 +63,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/contentOfProduct"
         app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="MissingConstraints"/>
+        tools:ignore="MissingConstraints"
+        android:backgroundTint="@android:color/system_accent2_900"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

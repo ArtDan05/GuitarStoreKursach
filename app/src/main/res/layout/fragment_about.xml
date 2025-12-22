@@ -11,7 +11,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_margin="5pt"/>
+        android:layout_margin="5pt"
+        android:background="@drawable/card_design"
+        android:padding="10dp"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,7 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/card_design"
+    android:paddingBottom="10dp"
+    android:layout_marginHorizontal="5dp"
+    android:layout_marginTop="5dp">
     <LinearLayout
         android:id="@+id/contentOfProduct"
         android:layout_width="match_parent"
@@ -35,7 +39,8 @@
                 android:layout_marginStart="10dp"
                 android:textSize="12pt"
                 android:textStyle="bold"
-                android:textColor="@android:color/holo_green_dark"/>
+                android:textColor="@android:color/holo_green_dark"
+                />
         </LinearLayout>
 
         <ImageView
