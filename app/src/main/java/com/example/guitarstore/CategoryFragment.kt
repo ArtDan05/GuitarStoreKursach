@@ -10,11 +10,13 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import com.example.guitarstore.state.RootCategoryState
+import com.example.guitarstore.state.SubCategoryState
+
 
 class CategoryFragment : Fragment() {
     private lateinit var list: ListView
-    private val dao get() = DatabaseInstance.db.categoryDao()
-    var currentParentId: Int = 0
+    private val controlHub = ControlHub()
 
     var parentStack = mutableListOf<Int>()
 
@@ -39,15 +41,7 @@ class CategoryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         list = view.findViewById(R.id.CategoryList)
 
-        val parentIdArg = arguments?.getInt("parentId") ?: -1
-        val parentId = if (parentIdArg == -1) null else parentIdArg
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            val items = if (parentId == null)
-                dao.getRootCategories()
-            else
-                dao.getChildren(parentId)
-
+        controlHub.categories.observe(viewLifecycleOwner) { items ->
             val adapter = object : ArrayAdapter<CategoryEntity>(
                 requireContext(),
                 R.layout.item_category,
@@ -61,14 +55,20 @@ class CategoryFragment : Fragment() {
             }
 
             list.adapter = adapter
+        }
 
-            list.setOnItemClickListener { adapter, view, position, id ->
-                val item = adapter.getItemAtPosition(position) as CategoryEntity
-                openCategory(item.id)
-            }
+        list.setOnItemClickListener { adapter, _, position, _ ->
+            val item = adapter.getItemAtPosition(position) as CategoryEntity
+            openCategory(item.id)
+        }
 
+        controlHub.categoryState = RootCategoryState()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            controlHub.loadCategories()
         }
     }
+
 
     private fun openCategory(id: Int) {
         parentStack.add(id)
@@ -82,32 +82,12 @@ class CategoryFragment : Fragment() {
         }
 
         else {
-            currentParentId = id
-            loadCategories(id)
-        }
-    }
+            controlHub.categoryState = SubCategoryState(id)
 
-    private fun loadCategories(parentId: Int?) {
-        lifecycleScope.launch {
-            val items = if (parentId == null)
-                dao.getRootCategories()
-            else
-                dao.getChildren(parentId)
-
-            val adapter = object : ArrayAdapter<CategoryEntity>(
-                requireContext(),
-                R.layout.item_category,
-                items) {
-                override fun getItem(position: Int): CategoryEntity? = items[position]
-
-                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    val view = super.getView(position, convertView, parent) as TextView
-                    view.text = items[position].title
-                    return view
-                }
+            viewLifecycleOwner.lifecycleScope.launch {
+                controlHub.loadCategories()
             }
 
-            list.adapter = adapter
         }
     }
 

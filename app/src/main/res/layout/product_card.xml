@@ -27,6 +27,7 @@
             android:textSize="9pt"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
+            android:clickable="true"
             tools:ignore="MissingConstraints" />
 
         <TextView

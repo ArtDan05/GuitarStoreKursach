@@ -24,8 +24,8 @@ class DescriptionFragment : Fragment() {
     companion object {
         private const val ARG_ITEM_ID = "itemId"
 
-        fun newInstance(itemId: Int): ProductsFragment {
-            return ProductsFragment().apply {
+        fun newInstance(itemId: Int): DescriptionFragment {
+            return DescriptionFragment().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_ITEM_ID, itemId)
                 }

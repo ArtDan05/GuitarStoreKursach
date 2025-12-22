@@ -82,18 +82,17 @@ class ProductsFragment : Fragment() {
                             Toast.makeText(context, "Добавлено в корзину", Toast.LENGTH_LONG).show()
                         }
                     }
+
+                    nameView.setOnClickListener {
+                        requireActivity().supportFragmentManager.beginTransaction()
+                            .replace(R.id.mainContainer, DescriptionFragment.newInstance(items[position].id))
+                            .addToBackStack("products")
+                            .commit()
+                    }
+
                     return view
                 }
             }
-        }
-
-        list.setOnItemClickListener { adapter, view, position, id ->
-            val item = adapter.getItemAtPosition(position) as ProductEntity
-
-            childFragmentManager.beginTransaction()
-                .replace(R.id.mainContainer, DescriptionFragment.newInstance(item.id))
-                .addToBackStack(null)
-                .commit()
         }
     }
 

@@ -18,4 +18,8 @@ interface CategoryDao {
 
     @Query("SELECT COUNT(*) FROM categories")
     suspend fun getCount(): Int
+
+    @Query("SELECT * FROM categories WHERE parentId = :parentId")
+    fun getSubCategories(parentId: Int): List<CategoryEntity>
+
 }
